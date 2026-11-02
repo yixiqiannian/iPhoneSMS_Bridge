@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MessageAlert</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --bg-glow: rgba(34, 211, 170, 0.10);
+    --card: #151c24;
+    --card-top: #18202a;
+    --card-inner: #10161d;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --text: #eef2f6;
+    --text-dim: #8b98a8;
+    --text-mute: #5f6b7a;
+    --accent: #22d3aa;
+    --accent-soft: rgba(34, 211, 170, 0.12);
+    --danger: #f26d6d;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 9px;
+    --font: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(900px 520px at 50% -18%, var(--bg-glow), transparent 68%),
+      radial-gradient(700px 420px at 50% 118%, rgba(34, 211, 170, 0.05), transparent 70%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+    padding: 40px 20px;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 420px;
+    /* 垂直方向用 auto 外边距居中：内容超高时不会裁切顶部，可正常滚动 */
+    margin: auto 0;
+  }
+
+  /* ---------- 标题区 ---------- */
+  .header { text-align: center; margin-bottom: 26px; }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    color: var(--text);
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft);
+    border: 1px solid rgba(34, 211, 170, 0.28);
+    color: var(--accent);
+    flex: none;
+  }
+
+  .brand-mark svg { width: 16px; height: 16px; display: block; }
+
+  .tagline {
+    margin-top: 9px;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.1px;
+  }
+
+  /* ---------- 卡片 ---------- */
+  .card {
+    background: linear-gradient(180deg, var(--card-top) 0%, var(--card) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 18px 40px -16px rgba(0, 0, 0, 0.75);
+    padding: 22px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 10px;
+  }
+
+  /* ---------- 地址区 ---------- */
+  .addr-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-inner);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 11px 12px;
+    transition: border-color 0.2s ease;
+  }
+
+  .addr-box:hover { border-color: var(--border-strong); }
+
+  .addr-text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: -0.1px;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    user-select: all;
+  }
+
+  .addr-text.is-pending { color: var(--text-mute); font-family: var(--font); font-size: 13px; }
+  .addr-text.is-error { color: var(--danger); font-family: var(--font); font-size: 13px; }
+
+  .btn-copy {
+    flex: none;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(34, 211, 170, 0.26);
+    border-radius: var(--radius-sm);
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+    white-space: nowrap;
+  }
+
+  .btn-copy:hover:not(:disabled) {
+    background: rgba(34, 211, 170, 0.2);
+    border-color: rgba(34, 211, 170, 0.42);
+  }
+
+  .btn-copy:active:not(:disabled) { transform: translateY(1px); }
+
+  .btn-copy.is-done {
+    color: var(--accent);
+    background: rgba(34, 211, 170, 0.16);
+    border-color: rgba(34, 211, 170, 0.4);
+  }
+
+  .btn-copy:disabled {
+    color: var(--text-mute);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border);
+    cursor: default;
+  }
+
+  .addr-hint {
+    margin-top: 9px;
+    font-size: 11.5px;
+    color: var(--text-mute);
+  }
+
+  /* ---------- 使用说明 ---------- */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 22px 0 20px;
+  }
+
+  .steps { list-style: none; counter-reset: step; }
+
+  .steps li {
+    position: relative;
+    counter-increment: step;
+    padding-left: 26px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    /* 避免最后一行只剩一个字（Chrome/Edge 支持，其它浏览器自动忽略） */
+    text-wrap: pretty;
+  }
+
+  .steps li:last-child { margin-bottom: 0; }
+
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 17px;
+    text-align: center;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(34, 211, 170, 0.22);
+  }
+
+  .steps b { color: var(--text); font-weight: 600; }
+
+  .code-block {
+    margin-top: 14px;
+    background: var(--card-inner);
+    border: 1px solid var(--border);
+    border-left: 2px solid rgba(34, 211, 170, 0.5);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #a8b6c6;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .code-block .tok-param { color: var(--accent); }
+  .code-block .tok-var { color: #d9c58a; }
+
+  /* ---------- 状态区 ---------- */
+  .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 18px 0 0;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.2px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+    background: var(--text-mute);
+    transition: background 0.25s ease;
+  }
+
+  .status.is-online { color: #9fdc9f; }
+  .status.is-online .dot {
+    background: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.14);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  .status.is-offline { color: #e89090; }
+  .status.is-offline .dot {
+    background: var(--danger);
+    box-shadow: 0 0 0 3px rgba(242, 109, 109, 0.14);
+  }
+
+  .status.is-checking { color: var(--text-mute); }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.14); }
+    50% { box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.05); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .status.is-online .dot { animation: none; }
+    * { transition-duration: 0.01ms !important; }
+  }
+
+  /* ---------- 广告 / 二维码 ---------- */
+  .ad {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+  }
+
+  .ad-qr {
+    width: 86px;
+    height: 86px;
+    flex: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .ad-qr img {
+    width: 100%;
+    height: 100%;
+    /* 二维码必须完整显示，不能用 cover 裁切，否则扫不出来 */
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .ad-body { min-width: 0; }
+
+  .ad-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.2px;
+  }
+
+  .ad-title .accent { color: var(--accent); }
+
+  .ad-desc {
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: var(--text-mute);
+    line-height: 1.55;
+  }
+
+  /* ---------- 页脚 ---------- */
+  .foot {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 11px;
+    color: #3f4a57;
+    letter-spacing: 0.3px;
+  }
+
+  @media (max-width: 420px) {
+    body { padding: 26px 16px; }
+    .card { padding: 18px; }
+    .brand { font-size: 22px; }
+  }
+
+  /* pywebview 桌面窗口常见高度（440x680）：压缩留白，避免出现滚动条 */
+  @media (max-height: 760px) {
+    body { padding: 20px 20px; }
+    .header { margin-bottom: 16px; }
+    .brand { font-size: 22px; }
+    .brand-mark { width: 27px; height: 27px; border-radius: 8px; }
+    .tagline { margin-top: 6px; font-size: 12.5px; }
+    .card { padding: 18px; }
+    .divider { margin: 16px 0 15px; }
+    .steps li { margin-bottom: 7px; }
+    .code-block { margin-top: 11px; padding: 9px 11px; }
+    .status { margin-top: 13px; }
+    .ad { margin-top: 15px; padding: 12px 14px; gap: 12px; }
+    .ad-qr { width: 74px; height: 74px; }
+    .foot { margin-top: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 标题区 -->
+  <header class="header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"></path>
+        </svg>
+      </span>
+      MessageAlert
+    </div>
+    <p class="tagline">iPhone 消息，实时推送到电脑右下角</p>
+  </header>
+
+  <!-- 核心卡片 -->
+  <main class="card">
+
+    <!-- 访问地址 -->
+    <section>
+      <div class="section-label">本机访问地址</div>
+      <div class="addr-box">
+        <span class="addr-text is-pending" id="addressText" title="本机访问地址">获取中…</span>
+        <button class="btn-copy" id="copyBtn" type="button" disabled>复制地址</button>
+      </div>
+      <p class="addr-hint">请确保 iPhone 与本机处于同一 Wi-Fi 网络</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 使用说明 -->
+    <section>
+      <div class="section-label">使用说明</div>
+      <ol class="steps">
+        <li>在 iPhone 上打开<b>「快捷指令」</b>，新建一个快捷指令</li>
+        <li>添加操作<b>「获取 URL 内容」</b>，方法选择 GET</li>
+        <li>把地址填入 URL，把 <b>title</b>、<b>content</b> 换成推送内容</li>
+      </ol>
+      <div class="code-block">http://<span class="tok-var">&lt;IP&gt;</span>:9527/push?<span class="tok-param">title</span>=短信&amp;<span class="tok-param">content</span>=正文</div>
+    </section>
+
+  </main>
+
+  <!-- 状态区 -->
+  <div class="status is-checking" id="statusBar">
+    <span class="dot" aria-hidden="true"></span>
+    <span id="statusText">正在检测服务…</span>
+  </div>
+
+  <!-- 广告区 -->
+  <footer class="ad">
+    <div class="ad-qr">
+      <img src="/static/qrcode.jpg" alt="公众号二维码">
+    </div>
+    <div class="ad-body">
+      <div class="ad-title">请关注公众号 <span class="accent">Moon杂选</span></div>
+      <div class="ad-desc">扫码获取更多实用工具与技巧</div>
+    </div>
+  </footer>
+
+  <div class="foot">MessageAlert · 本地运行 · 数据不出局域网</div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var addressText = document.getElementById('addressText');
+  var copyBtn = document.getElementById('copyBtn');
+  var statusBar = document.getElementById('statusBar');
+  var statusText = document.getElementById('statusText');
+
+  var currentUrl = '';
+  var copyTimer = null;
+  var healthTimer = null;
+
+  /* ---------------- 地址获取 ---------------- */
+  function setAddress(text, state) {
+    addressText.textContent = text;
+    addressText.className = 'addr-text';
+    if (state === 'pending') { addressText.classList.add('is-pending'); }
+    if (state === 'error') { addressText.classList.add('is-error'); }
+  }
+
+  function loadAddress() {
+    setAddress('获取中…', 'pending');
+    copyBtn.disabled = true;
+    copyBtn.textContent = '复制地址';
+
+    fetch('/api/ip', { headers: { 'Accept': 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) { throw new Error('HTTP ' + res.status); }
+        return res.json();
+      })
+      .then(function (data) {
+        var url = data && (data.url || data.address || data.ip);
+        if (typeof url === 'string' && url) {
+          currentUrl = url;
+          setAddress(url, 'ok');
+          copyBtn.disabled = false;
+        } else {
+          throw new Error('empty url');
+        }
+      })
+      .catch(function () {
+        currentUrl = '';
+        setAddress('获取失败，请刷新页面重试', 'error');
+        copyBtn.disabled = true;
+      });
+  }
+
+  /* ---------------- 复制 ---------------- */
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function markCopied(ok) {
+    if (copyTimer) { clearTimeout(copyTimer); }
+    if (ok) {
+      copyBtn.textContent = '已复制 ✓';
+      copyBtn.classList.add('is-done');
+    } else {
+      copyBtn.textContent = '复制失败';
+    }
+    copyTimer = setTimeout(function () {
+      copyBtn.textContent = '复制地址';
+      copyBtn.classList.remove('is-done');
+      copyTimer = null;
+    }, 1500);
+  }
+
+  function copyAddress() {
+    if (!currentUrl) { return; }
+    var text = currentUrl;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function () { markCopied(true); })
+        .catch(function () { markCopied(fallbackCopy(text)); });
+    } else {
+      markCopied(fallbackCopy(text));
+    }
+  }
+
+  /* ---------------- 服务状态 ---------------- */
+  function setStatus(state, text) {
+    statusBar.className = 'status ' + state;
+    statusText.textContent = text;
+  }
+
+  function checkHealth() {
+    fetch('/api/health', { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) { throw new Error('HTTP ' + res.status); }
+        return res.json();
+      })
+      .then(function () { setStatus('is-online', '服务运行中'); })
+      .catch(function () { setStatus('is-offline', '服务未连接'); });
+  }
+
+  /* ---------------- 绑定 & 启动 ---------------- */
+  copyBtn.addEventListener('click', copyAddress);
+
+  addressText.addEventListener('click', function () {
+    if (!currentUrl) { loadAddress(); }
+  });
+
+  loadAddress();
+  checkHealth();
+  healthTimer = setInterval(checkHealth, 8000);
+  window.addEventListener('beforeunload', function () {
+    if (healthTimer) { clearInterval(healthTimer); }
+  });
+})();
+</script>
+</body>
+</html>
