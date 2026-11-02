@@ -1,4 +1,4 @@
-"""MessageAlert 后端服务。
+"""iPhoneSMS_Bridge 后端服务。
 
 iPhone「快捷指令」→ HTTP → Windows 右下角 toast。
 
@@ -152,7 +152,7 @@ def push_message(title: str, content: str) -> dict:
     if not title and not content:
         raise ValueError("缺少 title 或 content 参数：请在 JSON / form / query 里提供至少一个字段")
 
-    notify.push(title or "MessageAlert", content)
+    notify.push(title or "iPhoneSMS_Bridge", content)
     return {"ok": True}
 
 
@@ -324,7 +324,7 @@ def main() -> None:
         datefmt="%H:%M:%S",
     )
     ip = get_lan_ip()
-    logger.info("MessageAlert 后端启动中 …")
+    logger.info("iPhoneSMS_Bridge 后端启动中 …")
     logger.info("本机地址: http://127.0.0.1:%s", PORT)
     logger.info("局域网地址: http://%s:%s  (手机 / 快捷指令用这个)", ip, PORT)
     app.run(host=HOST, port=PORT, debug=False, threaded=True)

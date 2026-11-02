@@ -1,4 +1,4 @@
-# MessageAlert 使用说明
+# iPhoneSMS_Bridge 使用说明
 
 **一句话：iPhone 收到的短信，会实时弹到 Windows 电脑右下角。**
 
@@ -26,7 +26,7 @@
 
 | 区域 | 内容 |
 | --- | --- |
-| 顶部 | 标题 **MessageAlert** +「iPhone 消息，实时推送到电脑右下角」 |
+| 顶部 | 标题 **iPhoneSMS_Bridge** +「iPhone 消息，实时推送到电脑右下角」 |
 | 地址卡 | **本机访问地址**，例如 `http://192.168.1.100:9527`，右边是「复制地址」按钮 |
 | 使用说明 | 三步指引 + 一条 URL 示例 |
 | 状态点 | **● 服务运行中**（绿色）/ 服务未连接（红色） |
@@ -165,7 +165,7 @@ http://127.0.0.1:9527/push?title=测试&content=中文测试成功
 1. **电脑窗口还开着吗？** 关了窗口服务就停了。
 2. **绿色「服务运行中」还在吗？** 红了就重启 run.bat。
 3. **手机能连上电脑吗？** 用 iPhone 的 Safari 打开 `http://<电脑IP>:9527/`，能看到和电脑一样的界面就说明网络通。
-4. **电脑的通知被关了吗？** 打开 设置 → 系统 → 通知，确认「通知」总开关是开的，并允许「MessageAlert」发通知。
+4. **电脑的通知被关了吗？** 打开 设置 → 系统 → 通知，确认「通知」总开关是开的，并允许「iPhoneSMS_Bridge」发通知。
 5. **开了勿扰/专注助手吗？** 任务栏右下角若有月亮图标，点一下关掉；通知会被静音但不会丢失，可在通知中心看到。
 6. **快捷指令的「运行前询问」关了吗？** 没关的话每次都要你手动点，看起来就像"没反应"。回去把第 7 步补上。
 
@@ -190,7 +190,7 @@ http://127.0.0.1:9527/push?title=测试&content=中文测试成功
 **方法二（命令行，最直接）**：在开始菜单搜 `cmd` → 右键「以管理员身份运行」，粘贴：
 
 ```bat
-netsh advfirewall firewall add rule name="MessageAlert 9527" dir=in action=allow protocol=TCP localport=9527
+netsh advfirewall firewall add rule name="iPhoneSMS_Bridge 9527" dir=in action=allow protocol=TCP localport=9527
 ```
 
 输完回车，出现「确定」就好了。

@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title MessageAlert
+title iPhoneSMS_Bridge
 
 set "PY=venv\Scripts\python.exe"
 set "PYW=venv\Scripts\pythonw.exe"
@@ -47,7 +47,7 @@ if errorlevel 1 (
 )
 
 rem ============ 3. 启动主程序 ============
-echo [3/3] 正在启动 MessageAlert 窗口...
+echo [3/3] 正在启动 iPhoneSMS_Bridge 窗口...
 if exist "%PYW%" (
     start "" "%PYW%" app.py
 ) else (

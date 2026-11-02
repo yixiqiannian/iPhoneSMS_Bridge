@@ -1,4 +1,4 @@
-"""MessageAlert —— Windows 右下角原生 toast 通知封装。
+"""iPhoneSMS_Bridge —— Windows 右下角原生 toast 通知封装。
 
 对 winotify 的薄封装，统一处理：
   * 中文 / 任意 Unicode 文本（winotify 内部走 PowerShell CDATA，直接传 str 即可）
@@ -19,7 +19,7 @@ from winotify import Notification, audio
 logger = logging.getLogger(__name__)
 
 # 显示在通知左上角 / 操作中心里的应用名。可以是中文，但避免特殊符号。
-APP_ID = "MessageAlert"
+APP_ID = "iPhoneSMS_Bridge"
 
 # 通知停留时长：short ≈ 5s，long ≈ 25s
 DEFAULT_DURATION = "short"
@@ -67,7 +67,7 @@ def notify(
     Raises:
         RuntimeError: 底层 winotify / PowerShell 抛出的异常，交由调用方处理。
     """
-    safe_title = _sanitize(title, MAX_TITLE_LEN) or "MessageAlert"
+    safe_title = _sanitize(title, MAX_TITLE_LEN) or "iPhoneSMS_Bridge"
     safe_content = _sanitize(content, MAX_CONTENT_LEN)
 
     if duration not in ("short", "long"):
@@ -102,6 +102,6 @@ if __name__ == "__main__":  # 手动测试：python notify.py 标题 内容
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     _title = sys.argv[1] if len(sys.argv) > 1 else "测试通知"
-    _content = sys.argv[2] if len(sys.argv) > 2 else "来自 MessageAlert 的测试消息：你好，中文正常。"
+    _content = sys.argv[2] if len(sys.argv) > 2 else "来自 iPhoneSMS_Bridge 的测试消息：你好，中文正常。"
     notify(_title, _content)
     print("touch ok")

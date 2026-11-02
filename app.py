@@ -1,4 +1,4 @@
-"""MessageAlert 桌面版主程序。
+"""iPhoneSMS_Bridge 桌面版主程序。
 
 职责：把 server.py 里的 Flask 应用跑在后台线程，然后用 pywebview 打开一个
 440x680 的桌面窗口显示控制界面。iPhone 快捷指令推到 /push，电脑右下角弹出通知。
@@ -46,12 +46,12 @@ PORT = 9527
 LOCAL_URL = f"http://127.0.0.1:{PORT}/"
 HEALTH_URL = f"http://127.0.0.1:{PORT}/api/health"
 IP_URL = f"http://127.0.0.1:{PORT}/api/ip"
-WINDOW_TITLE = "MessageAlert - iPhone 消息推送"
+WINDOW_TITLE = "iPhoneSMS_Bridge - iPhone 消息推送"
 WINDOW_WIDTH = 440
 WINDOW_HEIGHT = 680
 LOG_FILE = os.path.join(BASE_DIR, "app.log")
 
-DEBUG_UI = os.environ.get("MESSAGEALERT_DEBUG", "").strip() in ("1", "true", "yes")
+DEBUG_UI = os.environ.get("IPHONESMS_BRIDGE_DEBUG", "").strip() in ("1", "true", "yes")
 
 logger = logging.getLogger("messagealert.app")
 
@@ -157,7 +157,7 @@ def _http_get(url: str, timeout: float = 1.0) -> bytes | None:
 
 
 def is_our_server() -> bool:
-    """判断 9527 上跑的是不是已经启动的 MessageAlert（而不是别的程序）。"""
+    """判断 9527 上跑的是不是已经启动的 iPhoneSMS_Bridge（而不是别的程序）。"""
     body = _http_get(IP_URL, timeout=0.8)
     if body is None:
         return False
@@ -237,7 +237,7 @@ def _fallback_error_window(message: str) -> None:  # pragma: no cover - 兜底�
         webview.start()
     except Exception:  # noqa: BLE001
         logger.exception("兜底窗口也打不开")
-        print(f"[MessageAlert] {message}")
+        print(f"[iPhoneSMS_Bridge] {message}")
 
 
 def open_desktop_window() -> None:
@@ -279,13 +279,13 @@ def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     setup_logging()
     logger.info("=" * 46)
-    logger.info("MessageAlert 启动 (pid=%s, python=%s)", os.getpid(), sys.version.split()[0])
+    logger.info("iPhoneSMS_Bridge 启动 (pid=%s, python=%s)", os.getpid(), sys.version.split()[0])
 
     ensure_root_route()
 
     if is_our_server():
         # 例如上次没关干净，或者用户又双击了一次 run.bat —— 复用已有服务
-        logger.info("检测到 9527 上已有 MessageAlert 在运行，直接打开窗口")
+        logger.info("检测到 9527 上已有 iPhoneSMS_Bridge 在运行，直接打开窗口")
     else:
         start_server_thread()
         if not wait_for_flask():
